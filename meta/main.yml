@@ -8,13 +8,12 @@ galaxy_info:
   author: kenorb
   company: EA31337 Ltd
   description: |
-    Role to run MetaTrader platform
-    (with Expert Advisors, Script and Indicators)
+    Role to provision VPN for Expert Advisors.
   galaxy_tags:
     - linux
     - windows
   license: GPL-3.0-only
-  min_ansible_version: 2.1
+  min_ansible_version: "2.1"
   namespace: ea31337
   platforms:
     - name: Alpine
