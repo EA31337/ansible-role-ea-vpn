@@ -1,0 +1,14 @@
+# A file containing a list of collections to be installed.
+# Usage:
+# ansible-galaxy install -r requirements.yml
+---
+collections:
+  - name: community.general  # Required by apk module.
+  - name: community.windows
+  - name: ansible.windows
+
+roles:
+  - name: ea31337.metatrader
+    scm: git
+    src: git+https://github.com/EA31337/ansible-role-metatrader.git
+    version: v1.0.2
