@@ -1,8 +1,25 @@
 ---
 driver:
-  name: default
+  name: docker
+lint: |
+  set -e
+  yamllint .
+  ansible-lint
 platforms:
-  - name: instance
-    # you might want to add your own variables here based on what provisioning
-    # you are doing like:
-    # image: quay.io/centos/centos:stream8
+  - image: ubuntu:jammy
+    name: ubuntu-jammy
+provisioner:
+  config_options:
+    defaults:
+      # Use the built-in default callback with result_format instead of community.general.yaml
+      stdout_callback: ansible.builtin.default
+      result_format: yaml
+      remote_tmp: /tmp/.ansible-tmp-$${USER}
+  name: ansible
+  inventory:
+    group_vars:
+      all:
+        wine_install_winetricks: true
+        wine_release: stable
+verifier:
+  name: ansible
