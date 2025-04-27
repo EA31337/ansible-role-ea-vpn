@@ -31,14 +31,16 @@
         - cmd_result.rc != 0
         - "'resource busy' not in cmd_result.stderr"
       register: cmd_result
-
-    - name: Activate all swaps
-      ansible.builtin.command: swapon -av
-      changed_when: "'ignored' not in cmd_result.stderr"
-      register: cmd_result
+      when: ea_vpn_swapfile_activate | bool
 
     - name: Add swap entry to /etc/fstab
       ansible.builtin.lineinfile:
         path: /etc/fstab
         line: "{{ swapfile | default('/var/cache/swapfile') }} none swap sw 0 0"
         state: present
+
+    - name: Activate all swaps
+      ansible.builtin.command: swapon -av
+      changed_when: "'ignored' not in cmd_result.stderr"
+      register: cmd_result
+      when: ea_vpn_swapfile_activate | bool

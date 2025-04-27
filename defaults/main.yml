@@ -1,5 +1,6 @@
 ---
 # Defaults file for ea_vpn role.
+ea_vpn_swapfile_activate: true
 ea_vpn_swapfile_create: true
 ea_vpn_swapfile_path: /var/cache/swapfile
 ea_vpn_swapfile_size: 2G
