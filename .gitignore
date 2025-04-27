@@ -1,3 +1,4 @@
+*.orig
 *.verb
 .ansible
 .cache
