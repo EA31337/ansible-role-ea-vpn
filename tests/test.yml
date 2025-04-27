@@ -1,5 +1,7 @@
 ---
-- hosts: localhost
+- name: Test the current role
+  hosts: localhost
   remote_user: root
   roles:
-    - ea_vpn
+    - name: ea_vpn  # noqa: role-name[path]
+      role: "{{ playbook_dir }}/.."
