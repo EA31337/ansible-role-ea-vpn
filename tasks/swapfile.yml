@@ -1,0 +1,50 @@
+---
+- name: Check if swapfile exists
+  ansible.builtin.stat:
+    path: "{{ swapfile | default('/var/cache/swapfile') }}"
+  register: swapfile_stat
+
+- name: Create swapfile
+  become: true
+  when: not swapfile_stat.stat.exists
+  block:
+    - name: Create swapfile
+      ansible.builtin.command: >-
+        fallocate -l "{{ size | default('2g') }}" "{{ swapfile | default('/var/cache/swapfile') }}"
+      changed_when: true
+      become: true
+
+    - name: Set swapfile permissions
+      ansible.builtin.file:
+        path: "{{ swapfile | default('/var/cache/swapfile') }}"
+        owner: root
+        group: root
+        mode: "0600"
+      become: true
+
+    - name: Format swapfile
+      ansible.builtin.command: mkswap "{{ swapfile | default('/var/cache/swapfile') }}"
+      changed_when: true
+      become: true
+
+    - name: Activate swapfile
+      ansible.builtin.command: swapon -v "{{ swapfile | default('/var/cache/swapfile') }}"
+      changed_when: cmd_result.rc == 0
+      failed_when:
+        - cmd_result.rc != 0
+        - "'resource busy' not in cmd_result.stderr"
+      register: cmd_result
+      become: true
+
+    - name: Activate all swaps
+      ansible.builtin.command: swapon -av
+      changed_when: "'ignored' not in cmd_result.stderr"
+      register: cmd_result
+      become: true
+
+    - name: Add swap entry to /etc/fstab
+      ansible.builtin.lineinfile:
+        path: /etc/fstab
+        line: "{{ swapfile | default('/var/cache/swapfile') }} none swap sw 0 0"
+        state: present
+      become: true
