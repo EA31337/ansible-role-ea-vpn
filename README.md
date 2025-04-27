@@ -45,7 +45,7 @@ To install dependencies manually, run:
 An example on how to use this role.
 
 1. Install role. See: [Install](#install) section.
-1. Create an inventory file.
+1. Create an inventory file. See: [`./tests/inventory`](./tests/inventory).
 1. Create a playbook. For example:
 
        ---
@@ -56,8 +56,8 @@ An example on how to use this role.
          roles:
            - role: ea31337.ea_vpn
 
-   Check other examples in: [./tests/test.yml](./tests/test.yml)
-   and [./molecule/default/converge.yml](./molecule/default/converge.yml)
+   Check other examples in: [`./tests/test.yml`](./tests/test.yml)
+   and [`./molecule/default/converge.yml`](./molecule/default/converge.yml)
 
 1. Run playbook using `ansible-playbook` command.
 
