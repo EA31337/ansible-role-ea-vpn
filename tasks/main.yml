@@ -1,2 +1,13 @@
 ---
 # Tasks file for ea_vpn role.
+
+- name: Configure swap file
+  ansible.builtin.include_tasks:
+    apply:
+      tags: swapfile
+    file: swapfile.yml
+  tags: swapfile
+  vars:
+    swapfile: "{{ ea_vpn_swapfile_path }}"
+    size: "{{ ea_vpn_swapfile_size }}"
+  when: ea_vpn_swapfile_create | bool
