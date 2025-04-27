@@ -6,6 +6,8 @@ lint: |
   yamllint .
   ansible-lint
 platforms:
+  - image: ubuntu:noble
+    name: ubuntu-noble
   - image: ubuntu:jammy
     name: ubuntu-jammy
 provisioner:
