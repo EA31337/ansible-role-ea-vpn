@@ -1,4 +1,7 @@
-# EA VPN
+# Ansible Role: EA VPN
+
+[![CodeRabbit PR Reviews](https://img.shields.io/coderabbit/prs/github/EA31337/ansible-role-ea-vpn?utm_source=oss&utm_medium=github&utm_campaign=EA31337%2Fansible-role-ea-vpn&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+PR+Reviews)](https://github.com/EA31337/ansible-role-ea-vpn/pulls)
+[![License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
 
 Ansible role to provision VPN (Virtual Private Server)
 for Expert Advisors.
@@ -24,7 +27,9 @@ For the VPN functionality:
 
 To install this role, you can use the following terminal command:
 
-    ansible-galaxy install git+https://github.com/EA31337/ansible-role-ea-vpn.git
+```shell
+ansible-galaxy install git+https://github.com/EA31337/ansible-role-ea-vpn.git
+```
 
 ## Role Variables
 
@@ -38,7 +43,9 @@ This role has the following dependencies:
 
 To install dependencies manually, run:
 
-    ansible-galaxy role install -r requirements.yml
+```console
+ansible-galaxy role install -r requirements.yml
+```
 
 ## Example Playbook
 
@@ -48,18 +55,38 @@ An example on how to use this role.
 1. Create an inventory file. See: [`./tests/inventory`](./tests/inventory).
 1. Create a playbook. For example:
 
-       ---
-       - name: Provision VPN
-         hosts: all
-         vars:
-           ea_vpn_swapfile_size: 2G
-         roles:
-           - role: ea31337.ea_vpn
+      ```yaml
+      ---
+      - name: Provision VPN
+        hosts: all
+        vars:
+          ea_vpn_swapfile_size: 2G
+        roles:
+          - role: ea31337.ea_vpn
+      ```
 
    Check other examples in: [`./tests/test.yml`](./tests/test.yml)
    and [`./molecule/default/converge.yml`](./molecule/default/converge.yml)
 
 1. Run playbook using `ansible-playbook` command.
+
+## Testing
+
+### Docker
+
+To test on Docker containers, run:
+
+```shell
+ansible-playbook -i tests/inventory/docker-containers.yml tests/playbooks/docker-containers.yml
+```
+
+### Molecule
+
+To test using Molecule, run:
+
+```shell
+molecule test
+```
 
 ## License
 
