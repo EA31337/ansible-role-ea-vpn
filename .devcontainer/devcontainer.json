@@ -38,7 +38,7 @@
     // "postCreateCommand": "uname -a",
     // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
     "image": "mcr.microsoft.com/devcontainers/base:jammy",
-    "name": "ansible-role-mt-runner",
+    "name": "ansible-role-ea-vpn",
     // Install dependencies and pre-commit hooks.
     "postCreateCommand": "pip install -r .devcontainer/requirements.txt && pre-commit install",
     // Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
