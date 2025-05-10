@@ -1,7 +1,7 @@
 # Ansible Role: EA VPN
 
 [![CodeRabbit PR Reviews](https://img.shields.io/coderabbit/prs/github/EA31337/ansible-role-ea-vpn?utm_source=oss&utm_medium=github&utm_campaign=EA31337%2Fansible-role-ea-vpn&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+PR+Reviews)](https://github.com/EA31337/ansible-role-ea-vpn/pulls)
-[![License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-GPLv3-brightgreen.svg)](LICENSE)
 
 Ansible role to provision VPN (Virtual Private Server)
 for Expert Advisors.
@@ -93,3 +93,5 @@ molecule test
 GNU GPL v3
 
 See: [LICENSE](./LICENSE)
+
+<!-- Named links -->
