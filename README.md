@@ -25,6 +25,8 @@ For the VPN functionality:
 
 ## Install
 
+### Install from GitHub
+
 To install this role, you can use the following terminal command:
 
 ```shell
@@ -33,7 +35,8 @@ ansible-galaxy install git+https://github.com/EA31337/ansible-role-ea-vpn.git
 
 ## Role Variables
 
-See: [./defaults/main.yml](./defaults/main.yml)
+For available variables,
+check [`defaults/main.yml`](defaults/main.yml).
 
 ## Dependencies
 
@@ -82,6 +85,12 @@ Steps to test role on Docker containers.
     ansible-galaxy install -r requirements.yml
     jinja2 requirements-local.yml.j2 -D "pwd=$PWD" -o requirements-local.yml
     ansible-galaxy install -r requirements-local.yml
+    ```
+
+    Alternatively, for development purposes, you can consider using symbolic link, e.g.
+
+    ```shell
+    ln -vs "$PWD" ~/.ansible/roles/ea31337.ea_vpn
     ```
 
 2. Ensure Docker service (e.g. Docker Desktop) is running.
