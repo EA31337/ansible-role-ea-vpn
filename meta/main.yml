@@ -1,19 +1,32 @@
+# Documentation: https://docs.ansible.com/ansible/latest/dev_guide/collections_galaxy_meta.html
 ---
 dependencies:
   - name: ea31337.metatrader
     scm: git
     src: https://github.com/EA31337/ansible-role-metatrader.git
-    version: v1.0.1
+    version: v1.0.1  # This should match version in requirements.yml
 galaxy_info:
   author: kenorb
   company: EA31337 Ltd
   description: |
     Role to provision VPN for Expert Advisors.
   galaxy_tags:
+    - desktop
+    - development
+    - docker
+    - emulator
+    - forex
+    - games
+    - graphics
+    - gui
     - linux
+    - system
+    - trading
+    - ubuntu
     - windows
-  license: GPL-3.0-only
-  min_ansible_version: "2.1"
+    - wine
+  license: GPL-3.0-or-later
+  min_ansible_version: "2.7"
   namespace: ea31337
   platforms:
     - name: Alpine
@@ -22,7 +35,20 @@ galaxy_info:
     - name: Debian
       versions:
         - all
+        - bullseye
+        - buster
+        - jessie
+        - stretch
+        - wheezy
+    # - name: NixOS
+    #   versions:
+    #     - all
     - name: Ubuntu
       versions:
         - all
+        - artful
+        - bionic
+        - focal
+        - trusty
+        - xenial
   role_name: ea_vpn
