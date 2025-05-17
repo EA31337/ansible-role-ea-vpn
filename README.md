@@ -25,6 +25,14 @@ For the VPN functionality:
 
 ## Install
 
+### Install from Ansible Galaxy
+
+To install this role from Ansible Galaxy, run the following command:
+
+```console
+ansible-galaxy install ea31337.ea_vpn
+```
+
 ### Install from GitHub
 
 To install this role, you can use the following terminal command:
