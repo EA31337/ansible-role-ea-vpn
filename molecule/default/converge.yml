@@ -1,9 +1,10 @@
 ---
 - name: Converge
   hosts: all
+  gather_facts: true
+  roles:
+    - role: ea31337.ea_vpn
   vars:
     ea_vpn_swapfile_activate: false  # Disable swap activation for testing.
     ea_vpn_swapfile_path: /root/molecule_swapfile
     ea_vpn_swapfile_size: 256M  # Smaller size for testing.
-  roles:
-    - role: ea31337.ea_vpn
