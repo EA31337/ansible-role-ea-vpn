@@ -48,28 +48,23 @@ provisioner:
     diff: true
     force-handlers: true
   playbooks:
-    cleanup: cleanup.yml
     converge: converge.yml
     create: create.yml
     destroy: destroy.yml
     prepare: prepare.yml
-    side_effect: side_effect.yml
     verify: verify.yml
 
 scenario:
   name: default
   test_sequence:
     - dependency
-    - cleanup
     - destroy
     - syntax
     - create
     - prepare
     - converge
     - idempotence
-    - side_effect
     - verify
-    - cleanup
     - destroy
 verifier:
   name: ansible
