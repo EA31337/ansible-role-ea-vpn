@@ -49,61 +49,10 @@ For project overview and install instructions, see [README.md](README.md).
 - MUST reference GitHub Actions by simple major version tags (e.g. `actions/checkout@v6`),
   not pinned patch versions (e.g. `@v6.1.0`), so minor/patch updates apply automatically.
 
-## Molecule Scenarios
+## Molecule Testing
 
-| Scenario | Notes |
-| -------- | ----- |
-| `default` | Swapfile provisioning tests |
-
-### Platforms (default scenario)
-
-| Container | Image | Notes |
-| --------- | ----- | ----- |
-| `ea-vpn-ubuntu-jammy` | `ubuntu:jammy` | Uses apt |
-| `ea-vpn-ubuntu-noble` | `ubuntu:noble` | Uses apt |
-
-Platform names are prefixed with the role name (`ea-vpn-`) because Molecule's Docker
-driver names each container exactly after its platform. Generic names such as
-`ubuntu-noble` would collide with concurrent Molecule runs of other roles.
-
-### Running Tests
-
-Molecule and Ansible are installed via the project `Pipfile`, so run every command through `pipenv`
-(they are not on `PATH`).
-
-```bash
-# Full test (all scenarios)
-pipenv run molecule test
-
-# Single scenario
-pipenv run molecule test -s default
-
-# Individual steps
-pipenv run molecule create -s default
-pipenv run molecule converge -s default
-pipenv run molecule verify -s default
-pipenv run molecule destroy -s default
-
-# Syntax check only
-pipenv run molecule syntax
-```
-
-### Sandboxed / firewalled environments
-
-In sandboxed or firewalled environments the default Docker bridge may have no outbound NAT, and the
-resolver may return IPv6 addresses that are not routable. Both behaviours are opt-in via environment
-variables consumed by `molecule/default/create.yml`:
-
-- `MOLECULE_DOCKER_NETWORK` (default `default`): Docker network used for test containers. Set to
-  `host` in sandboxed environments where the default bridge has no outbound NAT.
-- `MOLECULE_DOCKER_FORCE_IPV4` (default unset): Prefer IPv4 for DNS resolution inside containers.
-  Set to `true` when the resolver returns IPv6 addresses that are not routable.
-
-Example invocation:
-
-```bash
-MOLECULE_DOCKER_NETWORK=host MOLECULE_DOCKER_FORCE_IPV4=true pipenv run molecule test -s default
-```
+Molecule scenarios, the platform matrix, how to run the tests, and Molecule-specific
+troubleshooting live in [molecule/AGENTS.md](molecule/AGENTS.md).
 
 ## Testing & Verification Gates
 
@@ -135,16 +84,6 @@ Requirements:
 - Outbound access to `ghcr.io`, `.github.com`, `*.githubusercontent.com`, and the apt / PyPI /
   Galaxy hosts. Host firewalls that prompt per connection (e.g. Portmaster) block the `nanolayer`
   downloads long enough to time out - pre-allow those domains.
-
-### Molecule Gates
-
-- `pipenv run molecule syntax` - YAML + playbook syntax validation
-- `pipenv run molecule converge` - full role execution on all containers
-- `pipenv run molecule idempotence` - re-run must produce zero changes
-- `pipenv run molecule verify` - asserts role functionality
-- `yamllint .` - YAML lint (config: `.yamllint`)
-- `ansible-lint` - Ansible best practices (config: `.ansible-lint`)
-- `pre-commit run -a` - all pre-commit hooks
 
 ## Common Tasks
 
