@@ -16,11 +16,15 @@ lint: |
   yamllint .
   molecule syntax
   ansible-lint
+# Platform names are prefixed with the role name so the Docker containers
+# (named after the platform) stay unique across roles. Molecule's Docker driver
+# names each container exactly after its platform, so generic names such as
+# `ubuntu-noble` collide with concurrent Molecule runs of other roles.
 platforms:
   - image: ubuntu:noble
-    name: ubuntu-noble
+    name: ea-vpn-ubuntu-noble
   - image: ubuntu:jammy
-    name: ubuntu-jammy
+    name: ea-vpn-ubuntu-jammy
 provisioner:
   config_options:
     defaults:

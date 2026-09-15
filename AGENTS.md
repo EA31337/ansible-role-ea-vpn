@@ -59,8 +59,12 @@ For project overview and install instructions, see [README.md](README.md).
 
 | Container | Image | Notes |
 | --------- | ----- | ----- |
-| `ubuntu-jammy` | `ubuntu:jammy` | Uses apt |
-| `ubuntu-noble` | `ubuntu:noble` | Uses apt |
+| `ea-vpn-ubuntu-jammy` | `ubuntu:jammy` | Uses apt |
+| `ea-vpn-ubuntu-noble` | `ubuntu:noble` | Uses apt |
+
+Platform names are prefixed with the role name (`ea-vpn-`) because Molecule's Docker
+driver names each container exactly after its platform. Generic names such as
+`ubuntu-noble` would collide with concurrent Molecule runs of other roles.
 
 ### Running Tests
 
