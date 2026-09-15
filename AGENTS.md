@@ -19,6 +19,9 @@ For project overview and install instructions, see [README.md](README.md).
 
 | Path | Purpose |
 | ---- | ------- |
+| `.devcontainer/devcontainer.json` | Dev container definition (base image, Features, `onCreateCommand`) |
+| `.devcontainer/provision.yml` | Ansible playbook run by `onCreateCommand` to provision the container |
+| `.devcontainer/requirements.txt` | Python dependencies installed in the dev container |
 | `defaults/main.yml` | Default role variables (`ea_vpn_swapfile_*`) |
 | `tasks/main.yml` | Role entry point; includes the swapfile tasks |
 | `tasks/swapfile.yml` | Swapfile creation, formatting, activation, and `/etc/fstab` entry |
@@ -29,6 +32,7 @@ For project overview and install instructions, see [README.md](README.md).
 | `meta/main.yml` | Galaxy metadata + role dependencies |
 | `.github/workflows/molecule.yml` | CI: Molecule test matrix |
 | `.github/workflows/check.yml` | CI: pre-commit / linting |
+| `.github/workflows/devcontainer-ci.yml` | CI: dev container build & test |
 | `.github/workflows/test.yml` | CI: Ansible syntax/lint and Docker container tests |
 | `.github/prompts/code-review.prompt.md` | Code review prompt |
 
@@ -99,6 +103,37 @@ MOLECULE_DOCKER_NETWORK=host MOLECULE_DOCKER_FORCE_IPV4=true pipenv run molecule
 
 ## Testing & Verification Gates
 
+### Dev Container Build & Test
+
+The dev container is defined in `.devcontainer/` and is the primary development environment.
+`devcontainer.json` uses the `mcr.microsoft.com/devcontainers/base:jammy` image plus devcontainer
+Features; its `onCreateCommand` installs Ansible and runs `provision.yml`.
+
+```bash
+# Build the image only (base image + Features)
+devcontainer build --workspace-folder .
+
+# Build, start the container, and run onCreateCommand (provision.yml)
+devcontainer up --workspace-folder .
+
+# Run a command inside the running container
+devcontainer exec --workspace-folder . bash -lc 'ansible --version'
+```
+
+- `devcontainer build` prints `{"outcome":"success",...}` on success.
+- `devcontainer up` additionally returns a `containerId` and a clean Ansible recap (`failed=0`);
+  it installs the apt packages, pipx Ansible, collections, and the pre-commit hook from `provision.yml`.
+
+Requirements:
+
+- Docker daemon reachable and the `devcontainer` CLI (v0.89+) installed.
+- A working default Docker bridge (see the troubleshooting entry below).
+- Outbound access to `ghcr.io`, `.github.com`, `*.githubusercontent.com`, and the apt / PyPI /
+  Galaxy hosts. Host firewalls that prompt per connection (e.g. Portmaster) block the `nanolayer`
+  downloads long enough to time out - pre-allow those domains.
+
+### Molecule Gates
+
 - `pipenv run molecule syntax` - YAML + playbook syntax validation
 - `pipenv run molecule converge` - full role execution on all containers
 - `pipenv run molecule idempotence` - re-run must produce zero changes
@@ -148,6 +183,27 @@ Known blockers (as of the 2026-09 update):
 ### Renaming/Removing Files
 
 - Use `git mv` / `git rm` to preserve history.
+
+## Troubleshooting
+
+### Dev container Feature install fails
+
+> `ERROR: Feature "..." failed to install!` with `curl: (6) Could not resolve host: github.com`
+> or `urllib.error.URLError: <urlopen error [Errno 113] No route to host>`
+
+- **Root cause (no network)**: `docker0`'s address does not match the `bridge` network's configured
+  gateway, so containers on the default bridge have no working gateway and BuildKit `RUN` steps
+  cannot reach the network.
+  - **Check**: `ip -4 addr show docker0` vs
+    `docker network inspect bridge --format '{{range .IPAM.Config}}{{.Gateway}}{{end}}'`.
+  - **Fix**: `sudo systemctl restart docker` recreates `docker0` with the configured gateway.
+    Non-disruptive workaround (not persistent): `sudo ip addr add <gateway>/16 dev docker0`.
+- **Root cause (blocked downloads)**: a host firewall that prompts per connection (e.g. Portmaster)
+  blocks `nanolayer`'s `ghcr.io` / `api.github.com` requests while the prompt is pending, and
+  `nanolayer` times out first.
+  - **Fix**: pre-allow `ghcr.io`, `.github.com`, `*.githubusercontent.com`, and the apt / PyPI /
+    Galaxy hosts in the firewall's outgoing rules. `github.com` matches only the apex; use
+    `.github.com` to match subdomains such as `api.github.com`.
 
 ## Firewall Issues
 
