@@ -1,0 +1,11 @@
+---
+- name: Test the current role
+  hosts: all
+  remote_user: root
+  roles:
+    - name: ea_vpn  # noqa: role-name[path]
+      role: "{{ playbook_dir }}/.."
+      vars:
+        wine_install_p7zip: true
+        wine_install_winetricks: true
+        wine_install_winetricks_dependencies: true
