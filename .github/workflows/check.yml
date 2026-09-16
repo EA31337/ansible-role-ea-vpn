@@ -27,4 +27,5 @@ jobs:
           path: ~/.cache/pre-commit
           key: pre-commit|${{ hashFiles('.pre-commit-config.yaml') }}
       - uses: actions/setup-python@v6
-      - uses: pre-commit/action@v3
+      # pre-commit/action publishes no moving `v3` tag; pin the latest release.
+      - uses: pre-commit/action@v3.0.1
