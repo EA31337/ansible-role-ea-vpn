@@ -40,15 +40,29 @@
 
     - name: Install Python 3 on Alpine
       ansible.builtin.raw: |
-        test -e "{{ ansible_python_interpreter }}" || (apk update && apk add --no-cache python3 py3-pip)
+        command -v python3 >/dev/null 2>&1 || \
+          (apk update -q && apk add -q --no-cache python3 py3-pip sudo bash ca-certificates procps)
       changed_when: false
       when: container_image is search("alpine")
 
     - name: Install Python 3 on Ubuntu/Debian
       ansible.builtin.raw: |
-        test -e "{{ ansible_python_interpreter }}" || (apt-get update && apt-get install -y python3 python3-pip)
+        command -v python3 >/dev/null 2>&1 || \
+          (export DEBIAN_FRONTEND=noninteractive && \
+          apt-get update -qq && \
+          apt-get install -y -qq --no-install-recommends python3 python3-pip sudo ca-certificates procps)
       changed_when: false
       when: container_image is search("ubuntu") or container_image is search("debian")
+
+    - name: Install or verify Python on NixOS
+      ansible.builtin.raw: |
+        PATH=/root/.nix-profile/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:$PATH
+        if ! command -v python3 >/dev/null 2>&1; then
+          nix-channel --update > /dev/null
+          nix-env -iA nixpkgs.python3 nixpkgs.python3Packages.pip nixpkgs.sudo nixpkgs.procps > /dev/null
+        fi
+      changed_when: false
+      when: container_image is search("nixos")
 
     - name: Gather facts
       ansible.builtin.setup:
@@ -59,6 +73,7 @@
           - python3
           - python3-pip
           - python3-setuptools
+          - sudo
         state: present
         update_cache: true
       when: container_image is search("ubuntu") or container_image is search("debian")
