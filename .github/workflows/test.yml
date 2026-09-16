@@ -36,7 +36,7 @@ jobs:
 
       - name: Install Ansible Galaxy requirements
         run: |
-          ansible-galaxy collection install -r requirements.yml -p collections
+          ansible-galaxy collection install -r requirements.yml -p collections --force
           ansible-galaxy install -r requirements.yml
         working-directory: ${{ github.repository }}
 
@@ -55,6 +55,10 @@ jobs:
 
       - name: Run Ansible lint
         run: ansible-lint tests/playbooks/docker-containers.yml
+        env:
+          # Resolve modules from the collections this workflow installs, not from the
+          # community.docker that pip's 'ansible' package bundles in site-packages.
+          ANSIBLE_COLLECTIONS_PATH: ${{ github.workspace }}/${{ github.repository }}/collections
         working-directory: ${{ github.repository }}
 
       - name: Run Ansible playbook
