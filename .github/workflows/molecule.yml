@@ -54,7 +54,8 @@ jobs:
         working-directory: ${{ github.repository }}
       - if: always()
         name: Converts test report
-        uses: patrick-werner/fhir-html-validation-to-markdown@1
+        # Pinned to a patch tag: this action publishes no moving major tag, so '@1' does not resolve.
+        uses: patrick-werner/fhir-html-validation-to-markdown@1.0.0
         with:
           input_file: ${{ github.repository }}/molecule-${{ matrix.scenario }}-report.html
       # Debug with tmate on failure when debug logging is enabled.

@@ -35,7 +35,9 @@ jobs:
         working-directory: ${{ github.repository }}
 
       - name: Install Ansible Galaxy requirements
-        run: ansible-galaxy install -r requirements.yml
+        run: |
+          ansible-galaxy collection install -r requirements.yml -p collections
+          ansible-galaxy install -r requirements.yml
         working-directory: ${{ github.repository }}
 
       - name: Install Ansible Galaxy local requirements
