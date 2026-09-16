@@ -1,5 +1,14 @@
-*.orig
-*.verb
 .ansible
+ansible-role-*
+*.bak
 .cache
+collections/
+*.html
+*.org
+*.orig
+*.png
 __pycache__
+requirements-local.yml
+*.swp
+.venv/
+*.verb

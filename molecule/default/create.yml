@@ -1,0 +1,68 @@
+---
+- name: Create
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    # Use controller Python (Ansible's interpreter)
+    ansible_python_interpreter: "{{ ansible_playbook_python }}"
+    # Opt-in: prefer IPv4 for DNS resolution inside containers. Required in
+    # environments whose resolver returns IPv6 addresses that are not routable.
+    # Usage: MOLECULE_DOCKER_FORCE_IPV4=true molecule test
+    molecule_docker_force_ipv4: "{{ lookup('env', 'MOLECULE_DOCKER_FORCE_IPV4') | default('', true) | bool }}"
+    # Opt-in: Docker network for containers and image builds. Required in
+    # sandboxed environments where the default bridge has no outbound NAT.
+    # Usage: MOLECULE_DOCKER_NETWORK=host molecule test
+    molecule_docker_network: "{{ lookup('env', 'MOLECULE_DOCKER_NETWORK') | default('default', true) }}"
+  tasks:
+    - name: Ensure test containers are running
+      community.docker.docker_container:
+        name: "{{ item.name }}"
+        image: "{{ item.image }}"
+        command: sleep infinity
+        network_mode: "{{ molecule_docker_network }}"
+        recreate: true
+        pull: true
+      loop: "{{ molecule_yml.platforms }}"
+      loop_control:
+        label: "{{ item.name }}"
+      no_log: "{{ ansible_verbosity | default(0) < 1 }}"
+    - name: Prefer IPv4 for DNS resolution in containers
+      community.docker.docker_container_exec:
+        container: "{{ item.name }}"
+        command: >-
+          sh -c 'if [ -L /etc/gai.conf ]; then rm -f /etc/gai.conf; fi;
+          grep -q "precedence ::ffff:0:0/96" /etc/gai.conf 2>/dev/null ||
+          echo "precedence ::ffff:0:0/96  100" >> /etc/gai.conf'
+      loop: "{{ molecule_yml.platforms }}"
+      loop_control:
+        label: "{{ item.name }}"
+      changed_when: false
+      when: molecule_docker_force_ipv4 | bool
+    - name: Build instance config entries
+      ansible.builtin.set_fact:
+        instance_conf_dict: >-
+          {{ instance_conf_dict | default([]) + [
+            {
+              'instance': item.name,
+              'address': item.name,
+              'user': 'root',
+              'port': 22,
+              'connection': 'docker',
+              'identity_file': None,
+              'ansible_ssh_common_args': "-o StrictHostKeyChecking=no"
+            }
+          ] }}
+      loop: "{{ molecule_yml.platforms }}"
+      loop_control:
+        label: "{{ item.name }}"
+    - name: Convert instance config list
+      ansible.builtin.set_fact:
+        instance_conf: "{{ instance_conf_dict }}"
+    - name: Dump instance config
+      ansible.builtin.copy:
+        # Bug: <lyz-code/yamlfix/issues/278>
+        content: |
+          {{ '# Molecule managed\n\n' ~ (instance_conf | to_json | from_json | to_yaml) }}
+        dest: "{{ molecule_instance_config }}"
+        mode: "0600"

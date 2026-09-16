@@ -1,25 +1,75 @@
 ---
+# Molecule configuration file.
+# Dependency management (download roles/collections)
+# Note: Keep YAML keys sorted alphabetically.
+dependency:
+  name: galaxy
+  options:
+    ignore-certs: false
+    ignore-errors: false
+    role-file: requirements.yml
+    requirements-file: requirements.yml
 driver:
   name: docker
 lint: |
   set -e
   yamllint .
+  molecule syntax
   ansible-lint
+# Platform names follow the `<role>-<scenario>-<platform>` convention so the
+# Docker containers (named after the platform) stay unique across roles and
+# scenarios. Molecule's Docker driver names each container exactly after its
+# platform, so generic names such as `ubuntu-noble` collide with concurrent
+# Molecule runs of other roles, and role-only names collide across scenarios.
 platforms:
+  - image: ubuntu:noble
+    name: ea-vpn-default-ubuntu-noble
   - image: ubuntu:jammy
-    name: ubuntu-jammy
+    name: ea-vpn-default-ubuntu-jammy
 provisioner:
   config_options:
     defaults:
+      host_key_checking: false
       # Use the built-in default callback with result_format instead of community.general.yaml
-      stdout_callback: ansible.builtin.default
-      result_format: yaml
       remote_tmp: /tmp/.ansible-tmp-$${USER}
-  name: ansible
+      result_format: yaml
+      stdout_callback: ansible.builtin.default
+      verbosity: 1
+  env:
+    ANSIBLE_FORCE_COLOR: "1"
+    ANSIBLE_LOAD_CALLBACK_PLUGINS: "1"
   inventory:
     group_vars:
       all:
         wine_install_winetricks: true
         wine_release: stable
+    host_vars:
+      nixos-latest:
+        ansible_python_interpreter: /root/.nix-profile/bin/python3
+  ssh_connection:
+    pipelining: true
+  name: ansible
+  options:
+    diff: true
+    force-handlers: true
+  playbooks:
+    converge: converge.yml
+    create: create.yml
+    destroy: destroy.yml
+    prepare: prepare.yml
+    verify: verify.yml
+
+scenario:
+  name: default
+  test_sequence:
+    - dependency
+    - destroy
+    - syntax
+    - create
+    - prepare
+    - converge
+    - idempotence
+    - verify
+    - destroy
 verifier:
   name: ansible

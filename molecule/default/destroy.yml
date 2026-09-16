@@ -3,22 +3,30 @@
   hosts: localhost
   connection: local
   gather_facts: false
-  # no_log: "{{ molecule_no_log }}"
+  vars:
+    # Use controller Python (Ansible's interpreter)
+    ansible_python_interpreter: "{{ ansible_playbook_python }}"
+    controller_pip: pip3
+  pre_tasks:
+    - name: Ensure requests is installed on controller
+      ansible.builtin.pip:
+        name: requests
+        state: present
+        executable: "{{ controller_pip }}"
+
   tasks:
-    # Developer must implement.
+    - name: Stop and remove test containers
+      community.docker.docker_container:
+        name: "{{ item.name }}"
+        state: absent
+        force_kill: true
+      loop: "{{ molecule_yml.platforms }}"
 
-    # Mandatory configuration for Molecule to function.
-
-    - name: Populate instance config
-      ansible.builtin.set_fact:
-        instance_conf: {}
-
-    - name: Dump instance config
+    - name: Reset instance config
       ansible.builtin.copy:
         content: |
           # Molecule managed
 
-          {{ instance_conf | to_json | from_json | to_yaml }}
+          []
         dest: "{{ molecule_instance_config }}"
         mode: "0600"
-      when: server.changed | default(false) | bool  # noqa no-handler
