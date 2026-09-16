@@ -77,7 +77,8 @@ environment deterministically. Installing `ansible`/`ansible-lint` ad hoc instea
 2. **Install ea31337.ea_vpn role** - applies the role to every container, then stops the containers.
 
 Unlike the xvfb playbook, this one does not recreate containers, so a re-run reuses the containers
-that are already there (see Idempotency below).
+that are already there. It does stop them at the end of every run, which is why the two-run check
+below cannot report `changed=0` (see Idempotency).
 
 `test.yml` applies the role to `localhost` from the working tree, and `upcloud.yml` applies it to the
 hosts in the `upcloud` inventory (a real VM, not a container).
@@ -102,13 +103,41 @@ have, so the `swapon` step can be skipped or fail to take effect on some hosts.
 
 ### Idempotency
 
-`AGENTS.md` requires idempotent tasks. Because `docker-containers.yml` does not recreate containers,
-running it twice against the same containers is a valid idempotency check - the second run must
-report `changed=0`:
+`AGENTS.md` requires idempotent tasks, but running `docker-containers.yml` twice is **not** a valid
+idempotency check, and the second run can never report `changed=0`. Two things guarantee changes:
+
+- **`Stop Docker containers`** (post-task) unconditionally stops the containers, so it reports
+  `changed` on every run.
+- **A container restart resets running services.** The next run's pre-tasks start the containers
+  again, so anything started as a process is no longer running. This role depends on
+  `ea31337.metatrader`, which pulls in `ea31337.xvfb`; three tasks in its `tasks/supervisord.yml` are
+  gated on `supervisord_status.rc != 0` and so re-fire: `Remove stale supervisor socket if not
+  running`, `Remove stale supervisor pid if not running`, and `Start supervisord daemon`.
+
+To test idempotency, keep the containers up between runs and apply the role twice. The stop post-task
+inherits the play's `tags: always`, so `--skip-tags` cannot drop it without dropping the whole play;
+use a probe playbook that omits it and confirm the second run reports `changed=0`:
+
+```yaml
+---
+- name: Idempotency check
+  hosts: docker_containers
+  gather_facts: true
+  vars:
+    controller_python: '{{ ansible_playbook_python }}'
+  tasks:
+    - name: Installs ea31337.ea_vpn role
+      ansible.builtin.import_role:
+        name: ea31337.ea_vpn
+```
 
 ```bash
-pipenv run ansible-playbook -i tests/inventory/docker-containers.yml tests/playbooks/docker-containers.yml
-pipenv run ansible-playbook -i tests/inventory/docker-containers.yml tests/playbooks/docker-containers.yml
+# The playbook leaves the containers stopped, so start them first.
+docker start ea-vpn-on-ubuntu-latest
+
+# Run 1 may change the xvfb start-up tasks; run 2 must report changed=0.
+pipenv run ansible-playbook -i tests/inventory/docker-containers.yml /tmp/idempotency.yml
+pipenv run ansible-playbook -i tests/inventory/docker-containers.yml /tmp/idempotency.yml
 ```
 
 ## Troubleshooting Matrix
